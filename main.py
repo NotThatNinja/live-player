@@ -1,5 +1,5 @@
 import sys, os
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget, QListWidgetItem, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QToolButton, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSizePolicy
 from PySide6.QtCore import Slot
 
 
@@ -10,14 +10,14 @@ class Console(QWidget):
         self.queue = []
         self.current_index = -1
 
-        # Window settings
-        self.setWindowTitle("LivePlayer Console")
-        self.setFixedSize(500, 600)
-
         # Buttons
         self.prev_btn = QPushButton("Previous")
         self.next_btn = QPushButton("Next")
-        self.load_btn = QPushButton("Load")
+        self.load_btn = QToolButton(self)
+        self.load_btn.setText("Load")
+        self.load_btn.addAction("Load from file", self.load_queue)
+        self.load_btn.addAction("Load from directory", self.load_dir)
+        self.load_btn.setPopupMode(QToolButton.MenuButtonPopup)
         self.exit_btn = QPushButton("Exit")
 
         self.prev_btn.setDisabled(True)
@@ -30,11 +30,11 @@ class Console(QWidget):
 
         for btn in [self.next_btn, self.prev_btn, self.load_btn, self.exit_btn]:
             btn.setFixedHeight(60)
+            btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         # List view
         self.list_view = QListWidget()
-        self.list_view.setSelectionMode(QListWidget.NoSelection)
-        self.list_view.itemDoubleClicked.connect(lambda item: self.set_slide(item))
+        self.list_view.currentItemChanged.connect(lambda: self.set_slide(self.list_view.currentItem()))
 
         # Layouts
         top_row_layout = QHBoxLayout()
@@ -60,10 +60,7 @@ class Console(QWidget):
     def change_slide(self, step):
         self.current_index = (self.current_index + step) % len(self.queue)
 
-        # Update list view selection
-        self.list_view.setSelectionMode(QListWidget.SingleSelection)
         self.list_view.setCurrentRow(self.current_index)
-        self.list_view.setSelectionMode(QListWidget.NoSelection)
 
         # Update button states
         if self.current_index == 0:
@@ -88,6 +85,11 @@ class Console(QWidget):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "Text Files (*.txt)")
         if file_path:
             self.read_queue(file_path)
+    
+    def load_dir(self):
+        dir_path = QFileDialog.getExistingDirectory(self, "Select Directory")
+        if dir_path:
+            self.read_dir(dir_path)
 
     def exit(self):
         QApplication.quit()
@@ -137,5 +139,7 @@ if __name__ == "__main__":
     app.setStyleSheet(open("style.qss").read())
 
     window = Console()
+    window.setWindowTitle("LivePlayer Console")
+    window.setFixedSize(500, 600)
     window.show()
     sys.exit(app.exec())
