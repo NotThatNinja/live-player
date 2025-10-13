@@ -1,4 +1,6 @@
 QPushButton {
+    height: 60px;
+    layout.fillWidth: true;
     font-size: 16px;
 }
 
