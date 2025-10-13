@@ -21,7 +21,11 @@ class Player(QWidget):
         self.setLayout(layout)
     
     def play_image(self, path):
-        self.original_pixmap = QPixmap(path)
+        if QPixmapCache.find(path):
+            self.original_pixmap = QPixmapCache.find(path)
+        else:
+            self.original_pixmap = QPixmap(path)
+            QPixmapCache.insert(path, self.original_pixmap)
         self.update_image()
     
     def update_image(self):
@@ -119,6 +123,15 @@ class Console(QWidget):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "Text Files (*.txt)")
         if file_path:
             self.read_queue(file_path)
+        self.cache_queue()
+    
+    def cache_queue(self):
+        QPixmapCache.setCacheLimit(1024000)  # 1000 MB
+        for path in self.queue:
+            if path.endswith(".jpg") or path.endswith(".png"):
+                if not QPixmapCache.find(path):
+                    pixmap = QPixmap(path)
+                    QPixmapCache.insert(path, pixmap)
 
     def exit(self):
         QApplication.quit()
