@@ -1,6 +1,44 @@
 import sys, os
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QToolButton, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSizePolicy
-from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QPushButton, QLabel, QToolButton, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSizePolicy
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QPixmap
+
+
+class Player(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # Media widgets
+        self.image_label = QLabel()
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.original_pixmap = None
+
+        # Layout
+        layout = QStackedLayout()
+        layout.addWidget(self.image_label)
+
+        self.setLayout(layout)
+    
+    def play_image(self, path):
+        self.original_pixmap = QPixmap(path)
+        self.update_image()
+    
+    def update_image(self):
+        if self.original_pixmap and not self.original_pixmap.isNull():
+            self.image_label.setPixmap(self.original_pixmap.scaled(
+                self.size(),
+                Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                Qt.TransformationMode.SmoothTransformation
+            ))
+    
+    def resizeEvent(self, event):
+        self.update_image()
+        super().resizeEvent(event)
+    
+    def closeEvent(self, event):
+        event.accept()
+        QApplication.quit()
 
 
 class Console(QWidget):
@@ -34,7 +72,7 @@ class Console(QWidget):
 
         # List view
         self.list_view = QListWidget()
-        self.list_view.currentItemChanged.connect(lambda: self.set_slide(self.list_view.currentItem()))
+        self.list_view.itemClicked.connect(lambda item: self.set_slide(item))
 
         # Layouts
         top_row_layout = QHBoxLayout()
@@ -87,6 +125,8 @@ class Console(QWidget):
             self.read_queue(file_path)
     
     def load_dir(self):
+        QMessageBox.warning(self, "Info", "This feature is not implemented yet.")
+        return
         dir_path = QFileDialog.getExistingDirectory(self, "Select Directory")
         if dir_path:
             self.read_dir(dir_path)
@@ -131,15 +171,30 @@ class Console(QWidget):
         self.change_slide(0)
 
     def play_current(self):
-        pass
+        current_file = self.queue[self.current_index]
+        
+        # Check if image or video
+        if current_file.endswith(".jpg") or current_file.endswith(".png"):
+            player_window.play_image(current_file)
+    
+    def closeEvent(self, event):
+        event.accept()
+        QApplication.quit()
 
 
 if __name__ == "__main__":
     app = QApplication([])
     app.setStyleSheet(open("style.qss").read())
 
-    window = Console()
-    window.setWindowTitle("LivePlayer Console")
-    window.setFixedSize(500, 600)
-    window.show()
+    console_window = Console()
+    console_window.setWindowTitle("LivePlayer Console")
+    console_window.setFixedSize(500, 600)
+    console_window.show()
+
+    player_window = Player()
+    player_window.setWindowTitle("LivePlayer Player")
+    player_window.setMinimumSize(640, 360)
+    player_window.resize(640, 360)
+    player_window.show()
+
     sys.exit(app.exec())
