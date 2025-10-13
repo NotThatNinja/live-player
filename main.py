@@ -1,7 +1,7 @@
 import sys, os
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QPushButton, QLabel, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSizePolicy
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QPixmapCache
 
 
 class Player(QWidget):
