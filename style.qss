@@ -1,4 +1,4 @@
-QPushButton, QToolButton {
+QPushButton {
     font-size: 16px;
 }
 

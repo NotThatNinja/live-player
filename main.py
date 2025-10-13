@@ -1,5 +1,5 @@
 import sys, os
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QPushButton, QLabel, QToolButton, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSizePolicy
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QPushButton, QLabel, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSizePolicy
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QPixmap
 
@@ -51,11 +51,7 @@ class Console(QWidget):
         # Buttons
         self.prev_btn = QPushButton("Previous")
         self.next_btn = QPushButton("Next")
-        self.load_btn = QToolButton(self)
-        self.load_btn.setText("Load")
-        self.load_btn.addAction("Load from file", self.load_queue)
-        self.load_btn.addAction("Load from directory", self.load_dir)
-        self.load_btn.setPopupMode(QToolButton.MenuButtonPopup)
+        self.load_btn = QPushButton("Load")
         self.exit_btn = QPushButton("Exit")
 
         self.prev_btn.setDisabled(True)
@@ -123,13 +119,6 @@ class Console(QWidget):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "Text Files (*.txt)")
         if file_path:
             self.read_queue(file_path)
-    
-    def load_dir(self):
-        QMessageBox.warning(self, "Info", "This feature is not implemented yet.")
-        return
-        dir_path = QFileDialog.getExistingDirectory(self, "Select Directory")
-        if dir_path:
-            self.read_dir(dir_path)
 
     def exit(self):
         QApplication.quit()
